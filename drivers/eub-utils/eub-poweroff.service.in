@@ -1,0 +1,12 @@
+[Unit]
+Description = esrille unbrick poweroff service
+DefaultDependencies=no
+Before=poweroff.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=@@PREFIX@@/bin/eub_i2cpoweroff
+
+[Install]
+WantedBy=poweroff.target

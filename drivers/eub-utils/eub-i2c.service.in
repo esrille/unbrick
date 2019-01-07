@@ -1,0 +1,12 @@
+[Unit]
+Description = esrille unbrick i2c bridge service
+
+[Service]
+ExecStart=@@PREFIX@@/bin/eub_i2cattach
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=always
+Type=simple
+KillMode=process
+
+[Install]
+WantedBy=sysinit.target

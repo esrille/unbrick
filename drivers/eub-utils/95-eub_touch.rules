@@ -1,0 +1,1 @@
+SUBSYSTEM=="input", ATTRS{name}=="Esrille Unbrick Touch Screen", ENV{DEVNAME}=="*event*", SYMLINK+="input/touchscreen"

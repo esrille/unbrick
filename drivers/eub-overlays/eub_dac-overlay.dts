@@ -1,0 +1,59 @@
+// Definitions for Esrille Unbrick Sound Board
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2708";
+
+	fragment@0 {
+		target-path = "/clocks";
+		__overlay__ {
+			eub_dac_clk: eub_dac_clk {
+				compatible = "hifiberry,dacpro-clk";
+				#clock-cells = <0>;
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <&i2s>;
+		__overlay__ {
+			status = "okay";
+		};
+	};
+
+	fragment@2 {
+		target = <&eub_i2c>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+
+			pcm5122@4d {
+				#sound-dai-cells = <0>;
+				compatible = "ti,pcm5122";
+				reg = <0x4d>;
+				clocks = <&eub_dac_clk>;
+				AVDD-supply = <&vdd_3v3_reg>;
+				DVDD-supply = <&vdd_3v3_reg>;
+				CPVDD-supply = <&vdd_3v3_reg>;
+				status = "okay";
+			};
+		};
+	};
+
+	fragment@3 {
+		target = <&sound>;
+		eub_dac: __overlay__ {
+			compatible = "esrille,eub_dac";
+			i2s-controller = <&i2s>;
+			status = "okay";
+		};
+	};
+
+	__overrides__ {
+		24db_digital_gain =
+			<&eub_dac>,"esrille,24db_digital_gain?";
+		slave = <&eub_dac>,"esrille,slave?";
+	};
+};

@@ -1,0 +1,36 @@
+// Definitions for Esrille Unbrick I2C Bridge Kernel Driver
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2708";
+
+	fragment@0 {
+		target-path = "/";
+		__overlay__ {
+			eub_i2c: i2c@0 {
+				compatible = "eub_i2c";
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+		};
+	};
+
+	fragment@1 {
+		target-path = "/aliases";
+		__overlay__ {
+			eub_i2c = "/i2c@0";
+		};
+	};
+
+	fragment@2 {
+		target-path = "/__symbols__";
+		__overlay__ {
+			eub_i2c = "/i2c@0";
+		};
+	};
+
+	__overrides__ {
+		bus = <&eub_i2c>, "reg:0";
+	};
+};

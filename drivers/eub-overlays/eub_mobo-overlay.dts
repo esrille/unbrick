@@ -1,0 +1,32 @@
+// Definitions for Esrille Unbrick Motherboard Multi-Function Driver
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2708";
+
+	fragment@0 {
+		target = <&eub_i2c>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+
+			eub_mobo: eub_mobo@8 {
+				compatible = "eub_mobo";
+				reg = <0x08>;
+				status = "okay";
+				backlight {
+					compatible = "esrille,eub_backlight";
+				};
+				touch {
+					compatible = "esrille,eub_touch";
+				};
+			};
+		};
+	};
+	__overrides__ {
+		addr = <&eub_mobo>, "reg:0";
+	};
+};
+

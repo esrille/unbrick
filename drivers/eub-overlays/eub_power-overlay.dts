@@ -1,0 +1,36 @@
+// Definitions for Esrille Unbrick Power Board Multi-Function Driver
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2708";
+
+	fragment@0 {
+		target = <&eub_i2c>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+
+			eub_power: eub_power@9 {
+				compatible = "eub_power";
+				reg = <0x09>;
+				status = "okay";
+				eub_battery: eub_battery {
+					compatible = "esrille,eub_battery";
+					status = "okay";
+				};
+				eub_mouse: eub_mouse {
+					compatible = "esrille,eub_mouse";
+					esrille,stick_play = /bits/ 8 <0x08>;
+					status = "okay";
+				};
+			};
+		};
+	};
+	__overrides__ {
+		addr = <&eub_power>, "reg:0";
+		stick_play = <&eub_mouse>,"esrille,stick_play.0";
+	};
+};
+

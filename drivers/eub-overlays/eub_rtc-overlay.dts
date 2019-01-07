@@ -1,0 +1,25 @@
+// Definitions for I2C based Real Time Clocks Available through eub_i2c
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2708";
+
+	fragment@0 {
+		target = <&eub_i2c>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+
+			ds1307: ds1307@68 {
+				compatible = "maxim,ds1307";
+				reg = <0x68>;
+				status = "okay";
+			};
+		};
+	};
+	__overrides__ {
+		addr = <&ds1307>, "reg:0";
+	};
+};
