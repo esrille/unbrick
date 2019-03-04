@@ -45,7 +45,8 @@ Alternatively, if you're using Linux, you may copy unbrick directory to /rootfs/
 Execute,
 
 ```
-$ unbrick/install.sh
+$ cd unbrick
+$ ./install.sh
 ```
 
 to install device drivers and other utilities.
