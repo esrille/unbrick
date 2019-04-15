@@ -1,4 +1,4 @@
-dtbo-y += eub_mobo.dtbo eub_power.dtbo eub_i2c.dtbo eub_rtc.dtbo eub_dac.dtbo
+dtbo-y += eub_mobo.dtbo eub_power.dtbo eub_i2c.dtbo eub_rtc.dtbo eub_dac.dtbo eub_uart0.dtbo
 
 targets += $(dtbo-y)
 
