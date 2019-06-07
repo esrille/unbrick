@@ -61,18 +61,18 @@ struct pcm512x_priv {
 static bool slave;
 static bool digital_gain_0db_limit = true;
 
-static void snd_eub_dac_select_clk(struct snd_soc_codec *codec,
+static void snd_eub_dac_select_clk(struct snd_soc_component *component,
 	int clk_id)
 {
 	switch (clk_id) {
 	case MASTER_NOCLOCK:
-		snd_soc_update_bits(codec, PCM512x_GPIO_CONTROL_1, 0x24, 0x00);
+		snd_soc_component_update_bits(component, PCM512x_GPIO_CONTROL_1, 0x24, 0x00);
 		break;
 	case MASTER_CLK44EN:
-		snd_soc_update_bits(codec, PCM512x_GPIO_CONTROL_1, 0x24, 0x20);
+		snd_soc_component_update_bits(component, PCM512x_GPIO_CONTROL_1, 0x24, 0x20);
 		break;
 	case MASTER_CLK48EN:
-		snd_soc_update_bits(codec, PCM512x_GPIO_CONTROL_1, 0x24, 0x04);
+		snd_soc_component_update_bits(component, PCM512x_GPIO_CONTROL_1, 0x24, 0x04);
 		break;
 	}
 }
@@ -97,10 +97,10 @@ static int snd_eub_dac_clk_for_rate(int sample_rate)
 	return type;
 }
 
-static void snd_eub_dac_set_sclk(struct snd_soc_codec *codec,
+static void snd_eub_dac_set_sclk(struct snd_soc_component *component,
 	int sample_rate)
 {
-	struct pcm512x_priv *pcm512x = snd_soc_codec_get_drvdata(codec);
+	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
 
 	if (!IS_ERR(pcm512x->sclk)) {
 		int ctype;
@@ -108,7 +108,7 @@ static void snd_eub_dac_set_sclk(struct snd_soc_codec *codec,
 		ctype = snd_eub_dac_clk_for_rate(sample_rate);
 		clk_set_rate(pcm512x->sclk, (ctype == MASTER_CLK44EN)
 			? CLK_44EN_RATE : CLK_48EN_RATE);
-		snd_eub_dac_select_clk(codec, ctype);
+		snd_eub_dac_select_clk(component, ctype);
 	}
 }
 
@@ -118,9 +118,10 @@ static int snd_eub_dac_gain_get(struct snd_kcontrol *kcontrol,
 	struct snd_soc_card *card = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_pcm_runtime *rtd =
 		snd_soc_get_pcm_runtime(card, card->dai_link[0].name);
-	struct snd_soc_codec *codec = rtd->codec;
-	unsigned int gain =
-		(snd_soc_read(codec, PCM512x_GPIO_CONTROL_1) & 0x18) >> 3;
+	struct snd_soc_component *component = rtd->codec_dai->component;
+	unsigned int gain;
+	snd_soc_component_read(component, PCM512x_GPIO_CONTROL_1, &gain);
+	gain = (gain & 0x18) >> 3;
 	ucontrol->value.integer.value[0] = gain;
 	return 0;
 }
@@ -131,9 +132,9 @@ static int snd_eub_dac_gain_put(struct snd_kcontrol *kcontrol,
 	struct snd_soc_card *card = snd_kcontrol_chip(kcontrol);
 	struct snd_soc_pcm_runtime *rtd =
 		snd_soc_get_pcm_runtime(card, card->dai_link[0].name);
-	struct snd_soc_codec *codec = rtd->codec;
+	struct snd_soc_component *component = rtd->codec_dai->component;
 	unsigned int gain = (ucontrol->value.integer.value[0] << 3) & 0x18;
-	return snd_soc_update_bits(codec, PCM512x_GPIO_CONTROL_1, 0x18, gain);
+	return snd_soc_component_update_bits(component, PCM512x_GPIO_CONTROL_1, 0x18, gain);
 }
 
 static const char * const eub_gain_texts[] = {
@@ -156,17 +157,17 @@ static const struct snd_kcontrol_new eub_dac_controls[] = {
 			snd_eub_dac_gain_put),
 };
 
-static void snd_eub_dac_clk_gpio(struct snd_soc_codec *codec)
+static void snd_eub_dac_clk_gpio(struct snd_soc_component *component)
 {
-	snd_soc_update_bits(codec, PCM512x_GPIO_EN, 0x24, 0x24);
-	snd_soc_update_bits(codec, PCM512x_GPIO_OUTPUT_3, 0x0f, 0x02);
-	snd_soc_update_bits(codec, PCM512x_GPIO_OUTPUT_6, 0x0f, 0x02);
+	snd_soc_component_update_bits(component, PCM512x_GPIO_EN, 0x24, 0x24);
+	snd_soc_component_update_bits(component, PCM512x_GPIO_OUTPUT_3, 0x0f, 0x02);
+	snd_soc_component_update_bits(component, PCM512x_GPIO_OUTPUT_6, 0x0f, 0x02);
 }
 
 static int snd_eub_dac_init(struct snd_soc_pcm_runtime *rtd)
 {
-	struct snd_soc_codec *codec = rtd->codec;
-	struct pcm512x_priv *priv = snd_soc_codec_get_drvdata(codec);
+	struct snd_soc_component *component = rtd->codec_dai->component;
+	struct pcm512x_priv *priv = snd_soc_component_get_drvdata(component);
 
 	if (!slave) {
 		struct snd_soc_dai_link *dai = rtd->dai_link;
@@ -176,10 +177,10 @@ static int snd_eub_dac_init(struct snd_soc_pcm_runtime *rtd)
 		dai->dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
 			| SND_SOC_DAIFMT_CBM_CFM;
 
-		snd_eub_dac_clk_gpio(codec);
-		snd_soc_update_bits(codec, PCM512x_BCLK_LRCLK_CFG, 0x31, 0x11);
-		snd_soc_update_bits(codec, PCM512x_MASTER_MODE, 0x03, 0x03);
-		snd_soc_update_bits(codec, PCM512x_MASTER_CLKDIV_2, 0x7f, 63);
+		snd_eub_dac_clk_gpio(component);
+		snd_soc_component_update_bits(component, PCM512x_BCLK_LRCLK_CFG, 0x31, 0x11);
+		snd_soc_component_update_bits(component, PCM512x_MASTER_MODE, 0x03, 0x03);
+		snd_soc_component_update_bits(component, PCM512x_MASTER_CLKDIV_2, 0x7f, 63);
 		if (!IS_ERR(priv->sclk))
 			clk_set_rate(priv->sclk, CLK_48EN_RATE);
 	} else {
@@ -190,13 +191,13 @@ static int snd_eub_dac_init(struct snd_soc_pcm_runtime *rtd)
 	 * unbrick DAC controls GAIN0 and GAIN1 of TPA6043A4 via GPIO4 and
 	 * GPIO5.
 	 */
-	snd_soc_update_bits(codec, PCM512x_GPIO_EN, 0x18, 0x18);
+	snd_soc_component_update_bits(component, PCM512x_GPIO_EN, 0x18, 0x18);
 	/* Set the default speaker gain */
-	snd_soc_update_bits(codec, PCM512x_GPIO_CONTROL_1, 0x18, SPEAKER_GAIN);
+	snd_soc_component_update_bits(component, PCM512x_GPIO_CONTROL_1, 0x18, SPEAKER_GAIN);
 	/* Set Register GPIO4 output */
-	snd_soc_update_bits(codec, PCM512x_GPIO_OUTPUT_4, 0x0f, 0x02);
+	snd_soc_component_update_bits(component, PCM512x_GPIO_OUTPUT_4, 0x0f, 0x02);
 	/* Set Register GPIO5 output */
-	snd_soc_update_bits(codec, PCM512x_GPIO_OUTPUT_5, 0x0f, 0x02);
+	snd_soc_component_update_bits(component, PCM512x_GPIO_OUTPUT_5, 0x0f, 0x02);
 
 	if (digital_gain_0db_limit) {
 		int ret;
@@ -216,8 +217,8 @@ static int snd_eub_dac_update_rate_den(
 	struct snd_pcm_substream *substream, struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct snd_soc_codec *codec = rtd->codec;
-	struct pcm512x_priv *pcm512x = snd_soc_codec_get_drvdata(codec);
+	struct snd_soc_component *component = rtd->codec_dai->component;
+	struct pcm512x_priv *pcm512x = snd_soc_component_get_drvdata(component);
 	struct snd_ratnum *rats_no_pll;
 	unsigned int num = 0, den = 0;
 	int err;
@@ -251,11 +252,11 @@ static int snd_eub_dac_hw_params(
 	int width = 32;
 
 	if (!slave) {
-		struct snd_soc_codec *codec = rtd->codec;
+		struct snd_soc_component *component = rtd->codec_dai->component;
 
 		width = snd_pcm_format_physical_width(params_format(params));
 
-		snd_eub_dac_set_sclk(codec,
+		snd_eub_dac_set_sclk(component,
 			params_rate(params));
 
 		ret = snd_eub_dac_update_rate_den(
@@ -327,17 +328,12 @@ static int snd_eub_dac_probe(struct platform_device *pdev)
 					      "esrille,slave");
 	}
 
-	ret = snd_soc_register_card(&snd_eub_dac);
+	ret = devm_snd_soc_register_card(&pdev->dev, &snd_eub_dac);
 	if (ret && ret != -EPROBE_DEFER)
 		dev_err(&pdev->dev,
 			"snd_soc_register_card() failed: %d\n", ret);
 
 	return ret;
-}
-
-static int snd_eub_dac_remove(struct platform_device *pdev)
-{
-	return snd_soc_unregister_card(&snd_eub_dac);
 }
 
 static const struct of_device_id snd_eub_dac_of_match[] = {
@@ -353,7 +349,6 @@ static struct platform_driver snd_eub_dac_driver = {
 		.of_match_table = snd_eub_dac_of_match,
 	},
 	.probe          = snd_eub_dac_probe,
-	.remove         = snd_eub_dac_remove,
 };
 
 module_platform_driver(snd_eub_dac_driver);
