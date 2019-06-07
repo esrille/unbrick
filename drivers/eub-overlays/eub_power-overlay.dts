@@ -13,17 +13,15 @@
 			status = "okay";
 
 			eub_power: eub_power@9 {
-				compatible = "eub_power";
+				compatible = "esrille,eub_power";
 				reg = <0x09>;
 				status = "okay";
 				eub_battery: eub_battery {
 					compatible = "esrille,eub_battery";
-					status = "okay";
 				};
 				eub_mouse: eub_mouse {
 					compatible = "esrille,eub_mouse";
 					esrille,stick_play = /bits/ 8 <0x08>;
-					status = "okay";
 				};
 			};
 		};
