@@ -130,13 +130,13 @@ static int eub_mobo_i2c_probe(struct i2c_client *i2c,
 }
 
 static const struct i2c_device_id eub_mobo_i2c_id[] = {
-	{ "eub_mobo", 0 },
+	{ "eub_mobo" },
 	{ }
 };
 MODULE_DEVICE_TABLE(i2c, eub_mobo_i2c_id);
 
 static const struct of_device_id eub_mobo_of_match[] = {
-	{.compatible = "esrille,eub_mobo", },
+	{ .compatible = "esrille,eub_mobo", },
 	{},
 };
 MODULE_DEVICE_TABLE(of, eub_mobo_of_match);
@@ -144,29 +144,14 @@ MODULE_DEVICE_TABLE(of, eub_mobo_of_match);
 static struct i2c_driver eub_mobo_i2c_driver = {
 	.driver = {
 		   .name = "eub_mobo",
-		   .of_match_table = of_match_ptr(eub_mobo_of_match),
+		   .of_match_table = eub_mobo_of_match,
 	},
 	.probe = eub_mobo_i2c_probe,
 	.id_table = eub_mobo_i2c_id,
 };
-
-static int __init eub_mobo_i2c_init(void)
-{
-	return i2c_add_driver(&eub_mobo_i2c_driver);
-}
-
-/* init early so consumer devices can complete system boot */
-subsys_initcall(eub_mobo_i2c_init);
-
-static void __exit eub_mobo_i2c_exit(void)
-{
-	i2c_del_driver(&eub_mobo_i2c_driver);
-}
-module_exit(eub_mobo_i2c_exit);
+module_i2c_driver(eub_mobo_i2c_driver);
 
 MODULE_DESCRIPTION("Esrille Unbrick Motherboard Multi-Function Driver");
 MODULE_AUTHOR("Esrille Inc. <info@esrille.com>");
 MODULE_LICENSE("GPL");
 MODULE_SOFTDEP("pre: eub_i2c");
-MODULE_SOFTDEP("post: eub_backlight");
-MODULE_SOFTDEP("post: eub_touch");

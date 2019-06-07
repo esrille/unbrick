@@ -13,7 +13,7 @@
 			status = "okay";
 
 			eub_mobo: eub_mobo@8 {
-				compatible = "eub_mobo";
+				compatible = "esrille,eub_mobo";
 				reg = <0x08>;
 				status = "okay";
 				backlight {
