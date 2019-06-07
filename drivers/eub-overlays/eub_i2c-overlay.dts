@@ -9,7 +9,7 @@
 		target-path = "/";
 		__overlay__ {
 			eub_i2c: i2c@0 {
-				compatible = "eub_i2c";
+				compatible = "esrille,eub_i2c";
 				#address-cells = <1>;
 				#size-cells = <0>;
 			};

@@ -309,7 +309,7 @@ static int eub_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[],
 
 static u32 eub_i2c_functionality(struct i2c_adapter *adap)
 {
-	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL;
+	return I2C_FUNC_I2C /* | I2C_FUNC_SMBUS_EMUL; */;
 }
 
 static struct i2c_algorithm eub_i2c_algorithm = {
@@ -369,7 +369,7 @@ static int eub_i2c_remove(struct platform_device *pdev)
 }
 
 static const struct of_device_id eub_i2c_of_match[] = {
-        { .compatible = "eub_i2c" },
+        { .compatible = "esrille,eub_i2c" },
         {},
 };
 MODULE_DEVICE_TABLE(of, eub_i2c_of_match);
